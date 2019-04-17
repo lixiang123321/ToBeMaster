@@ -4,9 +4,9 @@ public class Looper {
 
     MessageQueue queue;
 
-    static final ThreadLocal<Looper> sThreadLocal = new ThreadLocal<>();
+    private static final ThreadLocal<Looper> sThreadLocal = new ThreadLocal<>();
 
-    public Looper(MessageQueue queue) {
+    private Looper(MessageQueue queue) {
         this.queue = queue;
     }
 
@@ -22,7 +22,9 @@ public class Looper {
         Looper looper = myLooper();
         for (; ; ) {
             Message msg = looper.queue.next();
-            msg.target.handleMessage(msg);
+            if (null != msg) {
+                msg.target.dispatchMessage(msg);
+            }
         }
     }
 

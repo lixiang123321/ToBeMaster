@@ -8,6 +8,7 @@ import android.widget.LinearLayout;
 import com.nosuchserver.tobemaster.base.activity.TestBaseActivity;
 import com.nosuchserver.tobemaster.base.utils.TagLog;
 
+import java.util.Random;
 import java.util.UUID;
 
 public class HandlerLooperAct extends TestBaseActivity {
@@ -33,34 +34,33 @@ public class HandlerLooperAct extends TestBaseActivity {
     private void startLoop() {
         TagLog.i(TAG, "startLoop() : ");
 
-        Thread targetThread = new Thread() {
+        Looper.prepare();
+        handler = new Handler() {
             @Override
-            public void run() {
-                targetThreadRun();
+            public void handleMessage(Message msg) {
+                TagLog.i(TAG, "handleMessage() : "
+                        + " Thread.currentThread() = " + Thread.currentThread().getName() + ","
+                        + " msg.getWhat() = " + msg.getObject() + ","
+                );
             }
         };
-        targetThread.start();
-        try {
-            targetThread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
 
         for (int i = 0; i < 10; i++) {
             new Thread() {
                 @Override
                 public void run() {
-                    synchronized (UUID.class) {
+                    while (true) {
                         Message msg = new Message();
-                        msg.setWhat(UUID.randomUUID().toString());
+                        synchronized (UUID.class) {
+                            msg.setObject(UUID.randomUUID().toString());
+                        }
                         TagLog.i(TAG, "sendMessage() : "
-                                + " Thread.currentThread() = " + Thread.currentThread() + ","
-                                + " msg.getWhat() = " + msg.getWhat() + ","
+                                + " Thread.currentThread() = " + Thread.currentThread().getName() + ","
+                                + " msg.getWhat() = " + msg.getObject() + ","
                         );
                         handler.sendMessage(msg);
-
                         try {
-                            Thread.sleep(500);
+                            Thread.sleep(new Random().nextInt(10000));
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -68,19 +68,8 @@ public class HandlerLooperAct extends TestBaseActivity {
                 }
             }.start();
         }
-    }
 
-    private void targetThreadRun() {
-        Looper.prepare();
-        handler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                TagLog.i(TAG, "handleMessage() : "
-                        + " Thread.currentThread() = " + Thread.currentThread() + ","
-                        + " msg.getWhat() = " + msg.getWhat() + ","
-                );
-            }
-        };
         Looper.loop();
     }
+
 }

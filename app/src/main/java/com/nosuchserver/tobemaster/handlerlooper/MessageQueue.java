@@ -31,10 +31,10 @@ public class MessageQueue {
             while (MAX == count) {
                 notFull.await();
             }
-            putIndex = putIndex == MAX ? 0 : putIndex;
             messages[putIndex] = msg;
+            putIndex = ++putIndex == MAX ? 0 : putIndex;
             count++;
-            notEmpty.notifyAll();
+            notEmpty.signalAll();
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
@@ -49,10 +49,10 @@ public class MessageQueue {
             while (0 == count) {
                 notEmpty.await();
             }
-            getIndex = getIndex == MAX ? 0 : getIndex;
-            messages[putIndex] = msg;
+            msg = messages[getIndex];
+            getIndex = ++getIndex == MAX ? 0 : getIndex;
             count--;
-            notFull.notifyAll();
+            notFull.signalAll();
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {

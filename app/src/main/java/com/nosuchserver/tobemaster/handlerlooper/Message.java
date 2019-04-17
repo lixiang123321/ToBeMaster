@@ -2,17 +2,17 @@ package com.nosuchserver.tobemaster.handlerlooper;
 
 public class Message {
 
-    private String what;
+    private int what;
 
     private Object object;
 
     Handler target;
 
-    public String getWhat() {
+    public int getWhat() {
         return what;
     }
 
-    public void setWhat(String what) {
+    public void setWhat(int what) {
         this.what = what;
     }
 
