@@ -8,6 +8,8 @@ public class Message {
 
     Handler target;
 
+    Message next;
+
     public int getWhat() {
         return what;
     }

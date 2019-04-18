@@ -5,42 +5,35 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * 通过数组实现MessageQueue
+ * 通过链表实现MessageQueue
+ * @author rere
  */
-public class MessageQueue extends BaseMessageQueue {
+public class MessageQueue2 extends BaseMessageQueue {
 
-    private static final int MAX = 50;
-
-    private Message[] messages = new Message[MAX];
-
-    private int putIndex = 0;
-    private int getIndex = 0;
-
-    private int count = 0;
+    private Message messageHead;
 
     private Lock lock;
     private Condition notEmpty;
-    private Condition notFull;
 
-    public MessageQueue() {
+    public MessageQueue2() {
         lock = new ReentrantLock();
         notEmpty = lock.newCondition();
-        notFull = lock.newCondition();
     }
 
     @Override
     public void enqueueMessage(Message msg) {
         try {
             lock.lock();
-            while (MAX == count) {
-                notFull.await();
+            if (null == messageHead) {
+                messageHead = msg;
+            } else {
+                Message p = messageHead;
+                while (null != p.next) {
+                    p = p.next;
+                }
+                p.next = msg;
             }
-            messages[putIndex] = msg;
-            putIndex = ++putIndex == MAX ? 0 : putIndex;
-            count++;
             notEmpty.signalAll();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         } finally {
             lock.unlock();
         }
@@ -51,13 +44,11 @@ public class MessageQueue extends BaseMessageQueue {
         Message msg = null;
         try {
             lock.lock();
-            while (0 == count) {
+            while (null == messageHead) {
                 notEmpty.await();
             }
-            msg = messages[getIndex];
-            getIndex = ++getIndex == MAX ? 0 : getIndex;
-            count--;
-            notFull.signalAll();
+            msg = messageHead;
+            messageHead = msg.next;
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
